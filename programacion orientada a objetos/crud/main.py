@@ -135,27 +135,29 @@ def update_persona():
                 
                 if opcion == "1":
                     rut: int = int(input("Ingresa el rut de la persona: "))
-                    if persona_existe(persona):
-                        print(f"La persona con el rut {persona.rut} ya existe. Intente con otro rut.")
-                    persona.rut = rut
-                    print("Rut modificado exitosamente 👽✅")
+                    for persona in personas:
+                        if persona.rut == rut:
+                            print(f"La persona con el rut {persona.rut} ya existe. Intente con otro rut.")
+                        else:
+                            persona.rut = rut
+                            print("Rut modificado exitosamente 👽✅")
                 
                 elif opcion == "2":
                     digito_verificador: str = input("Ingresa el digito verificador: ")
                     persona.digito_verificador = digito_verificador
                     print("Digito verificador modificado exitosamente 👽✅")
 
-                elif opcion == "2":
+                elif opcion == "3":
                     nombres: str = input("Ingresa los nombres de la persona: ")
                     persona.nombres = nombres
                     print("Nombres modificado exitosamente 👽✅")
 
-                elif opcion == "3":
+                elif opcion == "4":
                     apellidos: str = input("Ingresa los apellidos de la persona: ")
                     persona.apellidos = apellidos
                     print("Nombres modificado exitosamente 👽✅")
 
-                elif opcion == "4":
+                elif opcion == "5":
                     dia_nacimiento = int(input("Ingresa el dia de nacimiento de la persona: "))
                     mes_nacimiento = int(input("Ingresa el mes de nacimiento de la persona: "))
                     anio_nacimiento = int(input("Ingresa el año de nacimiento de la persona: "))
@@ -167,12 +169,12 @@ def update_persona():
                     persona.fecha_nacimiento = fecha_nacimiento
                     print("Fecha de nacimiento modificado exitosamente 👽✅")
 
-                elif opcion == "5":
+                elif opcion == "6":
                     cod_area: int = int(input("Ingresa el codigo de area del telefono de la persona: "))
                     persona.cod_area = cod_area
                     print("Codigo de area modificado exitosamente 👽✅")
 
-                elif opcion == "6":
+                elif opcion == "7":
                     telefono: int = int(input("Ingresa el numero de telefono de la persona: "))
                     persona.telefono = telefono
                     print("Telefono modificado exitosamente 👽✅")
