@@ -185,11 +185,46 @@ def update_persona():
                 else:
                     print("Opcion incorrecta")
                     input("Presiona ENTER para continuar...")
+    
     print(f"Persona con rut {rut_busqueda}, no encontrada.")
     input("Presiona ENTER para continuar...")
 
-    
+
 
 
 def delete_persona():
-    pass
+    rut_busqueda = int(input("Ingresa el rut sin digito verificador (Ej: 12345678): "))
+    for persona in personas:
+        if rut_busqueda == persona.rut:
+            print(f"Eliminando a persona con datos {persona}")
+            personas.remove(persona)
+            print(f"Persona con rut {rut_busqueda} eliminada exitosamente.")
+    
+    print(f"Persona con rut {rut_busqueda}, no encontrada.")
+    input("Presiona ENTER para continuar...")
+
+while True:
+    print(
+        """
+            1. Crear persona
+            2. Listar personas
+            3. Editar persona
+            4. Eliminar persona
+            0. Salir
+        """
+        )
+    
+    opcion = input("Ingrese una opción [1-4,0]: ")
+    if opcion == "1":
+        create_persona()
+    elif opcion == "2":
+        read_persona()
+    elif opcion == "3":
+        update_persona()
+    elif opcion == "4":
+        delete_persona()
+    elif opcion == "0":
+        break
+    else:
+        print("Opcion invalida.")
+        input("Presione ENTER para continuar...")
