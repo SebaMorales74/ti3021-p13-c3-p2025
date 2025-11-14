@@ -11,7 +11,6 @@ password = os.getenv("ORACLE_PASSWORD")
 def get_connection():
     return oracledb.connect(user=username, password=password, dsn=dsn)
 
-
 def create_schema(query):
     try:
         with get_connection() as connection:
@@ -21,7 +20,9 @@ def create_schema(query):
     except oracledb.DatabaseError as error:
         print(f"No se pudo crear la tabla: {error}")
 
-tables = [
+
+if __name__ == "__main__":
+    tables = [
     (
         "CREATE TABLE PERSONAS ("
         "id INTEGER PRIMARY KEY,"
@@ -50,38 +51,5 @@ tables = [
     )
 ]
 
-# for query in tables:
-#     create_schema(query)
-
-
-from datetime import datetime
-def create_persona(id: int, rut: str, nombres: str, apellidos: str, fecha_nacimiento: str):
-    sql = (
-    "INSERT INTO personas (id, rut, nombres, apellidos, fecha_nacimiento) "
-    "VALUES (:id, :rut, :nombres, :apellidos, :fecha_nacimiento)"
-    )
-    bind_fecha = None
-    if fecha_nacimiento:
-        bind_fecha = datetime.strptime(fecha_nacimiento, "%Y-%m-%d")
-
-        parametros = {
-                "id": id,
-                "rut": rut,
-                "nombres": nombres,
-                "apellidos": apellidos,
-                "fecha_nacimiento": bind_fecha
-                }
-        
-        print(parametros)
-
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(sql, parametros)
-            conn.commit()
-
-    print(f"Persona con RUT={rut} creada.")
-
-def read_persona(id: int):
-    sql = (
-        "SELECT * FROM "
-    )
+    for query in tables:
+        create_schema(query)
