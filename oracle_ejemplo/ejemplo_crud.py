@@ -21,6 +21,7 @@ def create_schema(query):
     except oracledb.DatabaseError as error:
         print(f"No se pudo crear la tabla: {error}")
 
+
 tables = [
     (
         "CREATE TABLE PERSONAS ("
@@ -42,7 +43,7 @@ tables = [
         "CREATE TABLE EMPLEADO ("
         "id INTEGER PRIMARY KEY,"
         "sueldo INTEGER,"
-        "idPersona INTEGER NOT NULL,"
+        "idPersona INTEGER NOT NULL UNIQUE,"
         "idDepartamento INTEGER NOT NULL,"
         "FOREIGN KEY (idPersona) REFERENCES PERSONAS(id),"
         "FOREIGN KEY (idDepartamento) REFERENCES DEPARTAMENTO(id)"
@@ -50,38 +51,62 @@ tables = [
     )
 ]
 
-# for query in tables:
-#     create_schema(query)
-
+for query in tables:
+    create_schema(query)
 
 from datetime import datetime
-def create_persona(id: int, rut: str, nombres: str, apellidos: str, fecha_nacimiento: str):
+def create_persona(
+    id,
+    rut,
+    nombres,
+    apellidos,
+    fecha_nacimiento
+):
     sql = (
-    "INSERT INTO personas (id, rut, nombres, apellidos, fecha_nacimiento) "
-    "VALUES (:id, :rut, :nombres, :apellidos, :fecha_nacimiento)"
+        "INSERT INTO PERSONAS(id,rut,nombres,apellidos,fecha_nacimiento)"
+        "VALUES (:id,:rut,:nombres,:apellidos,:fecha_nacimiento)"
     )
-    bind_fecha = None
-    if fecha_nacimiento:
-        bind_fecha = datetime.strptime(fecha_nacimiento, "%Y-%m-%d")
 
-        parametros = {
-                "id": id,
-                "rut": rut,
-                "nombres": nombres,
-                "apellidos": apellidos,
-                "fecha_nacimiento": bind_fecha
-                }
-        
-        print(parametros)
+    parametros = {
+        "id": id,
+        "rut": rut,
+        "nombres": nombres,
+        "apellidos": apellidos,
+        "fecha_nacimiento": datetime.strptime(fecha_nacimiento, '%d-%m-%Y')
+    }
 
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(sql, parametros)
-            conn.commit()
 
-    print(f"Persona con RUT={rut} creada.")
-
-def read_persona(id: int):
+def create_departamento(
+    id,
+    nombre,
+    fecha_creacion
+):
     sql = (
-        "SELECT * FROM "
+        "INSERT INTO DEPARTAMENTO(id,nombre,fecha_creacion)"
+        "VALUES (:id,:nombre,:fecha_creacion)"
+    ) 
+
+    parametros = {
+        "id": id,
+        "nombre": nombre,
+        "fecha_creacion": datetime.strptime(fecha_creacion, '%d-%m-%Y')
+    }
+
+
+def create_empleado(
+    id,
+    sueldo,
+    idPersona,
+    idDepartamento
+):
+    sql = (
+        "INSERT INTO EMPLEADO(id,sueldo,idPersona,idDepartamento)"
+        "VALUES (:id,:sueldo,:idPersona,:idDepartamento)"
     )
+    
+    parametros = {
+        "id": id,
+        "sueldo": sueldo,
+        "idPersona": idPersona,
+        "idDepartamento": idDepartamento
+    }
