@@ -2,6 +2,7 @@ from datetime import datetime
 import oracledb
 import os
 from dotenv import load_dotenv
+from typing import Optional
 load_dotenv()
 
 username = os.getenv("ORACLE_USER")
@@ -12,7 +13,6 @@ password = os.getenv("ORACLE_PASSWORD")
 def get_connection():
     return oracledb.connect(user=username, password=password, dsn=dsn)
 
-
 def create_schema(query):
     try:
         with get_connection() as connection:
@@ -22,38 +22,38 @@ def create_schema(query):
     except oracledb.DatabaseError as error:
         print(f"No se pudo crear la tabla: {error}")
 
+def create_all_tables():
+    tables = [
+        (
+            "CREATE TABLE PERSONAS ("
+            "id INTEGER PRIMARY KEY,"
+            "rut VARCHAR(8),"
+            "nombres VARCHAR(64),"
+            "apellidos VARCHAR(64),"
+            "fecha_nacimiento DATE"
+            ")"
+        ),
+        (
+            "CREATE TABLE DEPARTAMENTOS("
+            "id INTEGER PRIMARY KEY,"
+            "nombre VARCHAR(32),"
+            "fecha_creacion DATE"
+            ")"
+        ),
+        (
+            "CREATE TABLE EMPLEADOS ("
+            "id INTEGER PRIMARY KEY,"
+            "sueldo INTEGER,"
+            "idPersona INTEGER NOT NULL UNIQUE,"
+            "idDepartamento INTEGER NOT NULL,"
+            "FOREIGN KEY (idPersona) REFERENCES PERSONAS(id),"
+            "FOREIGN KEY (idDepartamento) REFERENCES DEPARTAMENTO(id)"
+            ")"
+        )
+    ]
 
-tables = [
-    (
-        "CREATE TABLE PERSONAS ("
-        "id INTEGER PRIMARY KEY,"
-        "rut VARCHAR(8),"
-        "nombres VARCHAR(64),"
-        "apellidos VARCHAR(64),"
-        "fecha_nacimiento DATE"
-        ")"
-    ),
-    (
-        "CREATE TABLE DEPARTAMENTO("
-        "id INTEGER PRIMARY KEY,"
-        "nombre VARCHAR(32),"
-        "fecha_creacion DATE"
-        ")"
-    ),
-    (
-        "CREATE TABLE EMPLEADO ("
-        "id INTEGER PRIMARY KEY,"
-        "sueldo INTEGER,"
-        "idPersona INTEGER NOT NULL UNIQUE,"
-        "idDepartamento INTEGER NOT NULL,"
-        "FOREIGN KEY (idPersona) REFERENCES PERSONAS(id),"
-        "FOREIGN KEY (idDepartamento) REFERENCES DEPARTAMENTO(id)"
-        ")"
-    )
-]
-
-for query in tables:
-    create_schema(query)
+    for query in tables:
+        create_schema(query)
 
 # CREATE - Inserción de datos
 def create_persona(
@@ -92,7 +92,7 @@ def create_departamento(
     fecha_creacion
 ):
     sql = (
-        "INSERT INTO DEPARTAMENTO(id,nombre,fecha_creacion)"
+        "INSERT INTO DEPARTAMENTOS(id,nombre,fecha_creacion)"
         "VALUES (:id,:nombre,:fecha_creacion)"
     )
 
@@ -119,7 +119,7 @@ def create_empleado(
     idDepartamento
 ):
     sql = (
-        "INSERT INTO EMPLEADO(id,sueldo,idPersona,idDepartamento)"
+        "INSERT INTO EMPLEADOS (id,sueldo,idPersona,idDepartamento)"
         "VALUES (:id,:sueldo,:idPersona,:idDepartamento)"
     )
 
@@ -241,3 +241,144 @@ def read_empleado_by_id(id: int):
         print(f"No se pudo ejecutar la query {error} \n {sql} \n {parametros}")
 
 # UPDATE - Actualización de datos
+def update_persona(
+    id: int,
+    rut: Optional[str] = None,
+    nombres: Optional[str] = None,
+    apellidos: Optional[str] = None,
+    fecha_nacimiento: Optional[str] = None
+):
+    modificaciones = []
+    parametros = {"id": id}
+
+    if rut is not None:
+        modificaciones.append("rut =: rut")
+        parametros["rut"] = rut
+    if nombres is not None:
+        modificaciones.append("nombres =: nombres")
+        parametros["nombres"] = nombres
+    if apellidos is not None:
+        modificaciones.append("apellidos =: apellidos")
+        parametros["apellidos"] = apellidos
+    if fecha_nacimiento is not None:
+        modificaciones.append("fecha_nacimiento =: fecha_nacimiento")
+        parametros["fecha_nacimiento"] = datetime.strptime(fecha_nacimiento, "Y%-m%-d%")
+    if not modificaciones:
+        return print("No has enviado datos por modificar")
+    
+    sql = f"UPDATE PERSONAS SET { ", ".join(modificaciones) } WHERE id =: id"
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, parametros)
+        conn.commit()
+        print(f"Dato con ID={id} actualizado.")
+
+def update_departamento(
+    id: int,
+    nombre: Optional[str] = None,
+    fecha_creacion: Optional[str] = None
+):
+    modificaciones = []
+    parametros = {"id": id}
+
+    if nombre is not None:
+        modificaciones.append("nombre =: nombre")
+        parametros["nombre"] = nombre
+    if fecha_creacion is not None:
+        modificaciones.append("fecha_creacion =: fecha_creacion")
+        parametros["fecha_creacion"] = datetime.strptime(fecha_creacion, "Y%-m%-d%")
+    if not modificaciones:
+        return print("No has enviado datos por modificar")
+    
+    sql = f"UPDATE DEPARTAMENTOS SET { ", ".join(modificaciones) } WHERE id =: id"
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, parametros)
+        conn.commit()
+        print(f"Dato con ID={id} actualizado.")
+
+def update_empleado(
+    id: int,
+    sueldo: Optional[int],
+    idPersona: Optional[int],
+    idDepartamento: Optional[int]
+):
+    modificaciones = []
+    parametros = {"id": id}
+
+    if sueldo is not None:
+        modificaciones.append("sueldo =: sueldo")
+        parametros["sueldo"] = sueldo
+    if idPersona is not None:
+        modificaciones.append("idPersona =: idPersona")
+        parametros["idPersona"] = idPersona
+    if idDepartamento is not None:
+        modificaciones.append("idDepartamento =: idDepartamento")
+        parametros["idDepartamento"] = idDepartamento
+    if not modificaciones:
+        return print("No has enviado datos por modificar")
+    
+    sql = f"UPDATE EMPLEADOS SET { ", ".join(modificaciones) } WHERE id =: id"
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, parametros)
+        conn.commit()
+        print(f"Dato con ID={id} actualizado.")
+
+# DELETE - Eliminacion de datos
+def delete_persona(id: int):
+    sql = (
+        "DELETE FROM PERSONAS WHERE id = :id"
+    )
+    parametros = {"id" : id}
+
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, parametros)
+            conn.commit()
+            print(f"Dato eliminado \n {parametros}")
+    except oracledb.DatabaseError as e:
+        err = e
+        print(f"Error al eliminar dato: {err} \n {sql} \n {parametros}")
+
+def delete_departamento(id: int):
+    sql = (
+        "DELETE FROM DEPARTAMENTOS WHERE id = :id"
+    )
+    parametros = {"id" : id}
+
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, parametros)
+            conn.commit()
+            print(f"Dato eliminado \n {parametros}")
+    except oracledb.DatabaseError as e:
+        err = e
+        print(f"Error al eliminar dato: {err} \n {sql} \n {parametros}")
+
+def delete_empleado(id: int):
+    sql = (
+        "DELETE FROM EMPLEADOS WHERE id = :id"
+    )
+    parametros = {"id" : id}
+
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, parametros)
+            conn.commit()
+            print(f"Dato eliminado \n {parametros}")
+    except oracledb.DatabaseError as e:
+        err = e
+        print(f"Error al eliminar dato: {err} \n {sql} \n {parametros}")
+
+def main():
+    pass
+
+if __name__ == "__main__":
+    main()
