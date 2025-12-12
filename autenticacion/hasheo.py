@@ -13,4 +13,4 @@ confirm_password = input("Ingresa nuevamente la contraseña: ").encode("UTF-8")
 if bcrypt.checkpw(confirm_password, hashed_password):
     print("Contraseña correcta")
 else:
-    print("Contraeña incorrecta")
+    print("Contraseña incorrecta")
